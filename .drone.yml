@@ -1,0 +1,95 @@
+---
+kind: pipeline
+name: default
+type: kubernetes
+
+platform:
+  os: linux
+  arch: amd64
+
+environment:
+  AWS_REGION: eu-west-2
+  REPO_PATH: https://github.com/ciaranmcc/tf-infra.git
+  PROJECT_NAME: tf-infra
+  PIPELINE_STATUS_SCRIPT_REPO: https://gitlab.com/ciaranmcc/pipeline-status-script.git
+  FUNCTIONAL_TESTS_GIT_URL: https://github.com/ciaranmcc/functional-tests.git
+  FUNCTIONAL_TESTS_GIT_DIR: functional-tests
+  FUNCTIONAL_TESTS_PIPELINE_STATUS_ENDPOINT: https://github.com/api/v4/projects/7446/pipelines
+  RELEASE_TAGS_REPO: https://github.com/ciaranmcc/release_tags.git
+
+steps:
+
+#####################################
+###          Tag gitlab          ####
+#####################################
+
+- name: get_release_tag_base
+  pull: if-not-exists
+  image: quay.io/test/node-git:15.4.1-alpine3.12
+  commands:
+    - git clone $${RELEASE_TAGS_REPO}
+    - cd release-tags
+    - export EXISTING_TAGS=$(git tag -l)
+    - echo $(git describe --abbrev=0) > ../LATEST_RELEASE_TAG
+    - cat ../LATEST_RELEASE_TAG
+  when:
+    event:
+      - push
+    branch:
+      - main
+
+- name: get_current_version_main
+  pull: if-not-exists
+  image: quay.io/test/node-git:15.4.1-alpine3.12
+  commands:
+    - export MAJOR_RELEASE_TAG=$(cat LATEST_RELEASE_TAG)
+    - echo $MAJOR_RELEASE_TAG
+    - mkdir tagging_repo
+    - cd tagging_repo
+    - git clone $${REPO_PATH} -b $${DRONE_BRANCH}
+    - cd $${PROJECT_NAME}
+    - git describe --abbrev=0  > ../CURRENT_VERSION
+    - if [ ! -s ../CURRENT_VERSION ]; then echo $${MAJOR_RELEASE_TAG} > ../CURRENT_VERSION; fi
+    - cat ../CURRENT_VERSION
+  when:
+    event:
+      - push
+    branch:
+      - main
+  depends_on:
+    - get_release_tag_base
+
+- name: set_next_version_main
+  image: quay.io/test/node-git:15.4.1-alpine3.12
+  commands:
+    - cd tagging_repo
+    - npm install semver
+    # Increment the version of the application, there is no pre release for these types of applications
+    - npx semver -i patch $(cat CURRENT_VERSION) > NEXT_VERSION
+    - cat NEXT_VERSION
+  when:
+    event:
+      - push
+    branch:
+      - main
+  depends_on:
+    - get_current_version_main
+
+- name: tag_release
+  pull: if-not-exists
+  image: quay.io/test/node-git:15.4.1-alpine3.12
+  commands:
+    - cd tagging_repo
+    - export VERSION=$(cat NEXT_VERSION)
+    - cd $${PROJECT_NAME}
+    - git tag -a $${VERSION} -m "Release tag - $${VERSION}"
+    - git push --tags
+    - cd ../../
+    - rm -rf tagging_repo
+  when:
+    event:
+      - push
+    branch:
+      - main
+  depends_on:
+    - set_next_version_main
