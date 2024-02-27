@@ -9,8 +9,8 @@ platform:
 
 environment:
   AWS_REGION: eu-west-2
-  REPO_PATH: https://github.com/ciaranmcc/tf-infra.git
-  PROJECT_NAME: tf-infra
+  REPO_PATH: https://github.com/ciaranmcc/terraform-version-tag-deploy.git
+  PROJECT_NAME: terraform-version-tag-deploy
   PIPELINE_STATUS_SCRIPT_REPO: https://gitlab.com/ciaranmcc/pipeline-status-script.git
   FUNCTIONAL_TESTS_GIT_URL: https://github.com/ciaranmcc/functional-tests.git
   FUNCTIONAL_TESTS_GIT_DIR: functional-tests
@@ -25,7 +25,7 @@ steps:
 
 - name: get_release_tag_base
   pull: if-not-exists
-  image: quay.io/test/node-git:15.4.1-alpine3.12
+  image: meetup/node-github:latest
   commands:
     - git clone $${RELEASE_TAGS_REPO}
     - cd release-tags
