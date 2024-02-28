@@ -28,7 +28,7 @@ steps:
   image: meetup/node-github:latest
   commands:
     - git clone $${RELEASE_TAGS_REPO}
-    - cd release-tags
+    - cd release_tags
     - export EXISTING_TAGS=$(git tag -l)
     - echo $(git describe --abbrev=0) > ../LATEST_RELEASE_TAG
     - cat ../LATEST_RELEASE_TAG
@@ -40,7 +40,7 @@ steps:
 
 - name: get_current_version_main
   pull: if-not-exists
-  image: quay.io/test/node-git:15.4.1-alpine3.12
+  image: meetup/node-github:latest
   commands:
     - export MAJOR_RELEASE_TAG=$(cat LATEST_RELEASE_TAG)
     - echo $MAJOR_RELEASE_TAG
