@@ -60,7 +60,7 @@ steps:
     - get_release_tag_base
 
 - name: set_next_version_main
-  image: quay.io/test/node-git:15.4.1-alpine3.12
+  image: meetup/node-github:latest
   commands:
     - cd tagging_repo
     - npm install semver
@@ -77,7 +77,7 @@ steps:
 
 - name: tag_release
   pull: if-not-exists
-  image: quay.io/test/node-git:15.4.1-alpine3.12
+  image: meetup/node-github:latest
   commands:
     - cd tagging_repo
     - export VERSION=$(cat NEXT_VERSION)
