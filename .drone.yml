@@ -16,8 +16,7 @@ environment:
   FUNCTIONAL_TESTS_GIT_DIR: functional-tests
   FUNCTIONAL_TESTS_PIPELINE_STATUS_ENDPOINT: https://github.com/api/v4/projects/7446/pipelines
   RELEASE_TAGS_REPO: https://github.com/ciaranmcc/release_tags.git
-  GIT_PAT:
-    from_secret: GIT_PAT
+  GIT_PAT: ${GIT_PAT}
 
 steps:
 
