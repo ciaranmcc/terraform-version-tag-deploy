@@ -78,6 +78,9 @@ steps:
 - name: tag_release
   pull: if-not-exists
   image: meetup/node-github:latest
+  environment:
+    GIT_PAT:
+      from_secret: GIT_PAT
   commands:
     - cd tagging_repo
     - export VERSION=$(cat NEXT_VERSION)
