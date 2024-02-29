@@ -83,7 +83,7 @@ steps:
     - export VERSION=$(cat NEXT_VERSION)
     - cd $${PROJECT_NAME}
     - git tag -a $${VERSION} -m "Release tag - $${VERSION}"
-    - git push --tags
+    - git push https://ciaranmcc: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@github.com/ciaranmcc/terraform-version-tag-deploy.git --tags
     - cd ../../
     - rm -rf tagging_repo
   when:
